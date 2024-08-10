@@ -8,6 +8,12 @@ import ViewPost from './pages/ViewPost';
 import CreatePost from './pages/CreatePost';
 import EditPost from './pages/EditPost';
 import Profile from './pages/Profile';
+import LandingPage from './pages/LandingPage';
+import Blogcardeg from './pages/blogcardeg';
+import SignInForm from './components/SignIn';
+import SignUpForm from './components/SignUp';
+import PrivateRoute from './components/PrivateRoute';
+
 
 function App() {
 
@@ -16,10 +22,19 @@ function App() {
     <Header />
     {/* <BlogCard /> */}
     <Routes>
-    <Route path='/viewpost' element={<ViewPost />} />
+    <Route path='/' element={<Posts />} />
+    <Route path='/signin' element={<SignInForm />} />
+    <Route path='/signup' element={<SignUpForm />} />
+    <Route path='/bg' element={<Blogcardeg />} />
+    <Route path='/home' element={<LandingPage />} />
+    <Route element={<PrivateRoute />}>
+      <Route path='/profile' element={<Profile />}/>
+    </Route>
+    {/* <Route element={<PrivateRoute element={<Profile />} />} path='/profile' /> */}
+    <Route path='/story/:id' element={<ViewPost />} />
     <Route path='/createpost' element={<CreatePost />} />
     <Route path='/editpost' element={<EditPost />} />
-    <Route path='/profile' element={<Profile />} />
+    
     </Routes>
     </BrowserRouter>
   )

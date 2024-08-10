@@ -9,4 +9,4 @@ CREATE TABLE comments (
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO comments (story_id, author_id, content) VALUES (1, 1, 'This is a comment on the story.');
+INSERT INTO comments (story_id, author_id, content) VALUES (9, 12, 'This is a comment on the story from riyaz.');

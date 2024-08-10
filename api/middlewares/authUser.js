@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const authUser = (req, res, next) => {
-  const token = req.cookies.access_token;
+  const token = req.headers.authorization?.split(' ')[1]; // Extract token from `Authorization` header
 
   console.log('Token received in middleware:', token);
 

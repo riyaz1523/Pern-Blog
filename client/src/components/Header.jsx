@@ -1,21 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { signOut } from '../redux/user/userSlice'; 
 
-export default function Navbar() {
+export default function Header() {
+  const { currentUser } = useSelector((state) => state.user);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
   const profilePicRef = useRef(null);
   const dropdownRef = useRef(null);
-
-  const toggleDropdown = () => {
-    if (!isDropdownOpen) {
-      const rect = profilePicRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY + 10,
-        left: rect.left + window.scrollX - 150,
-      });
-    }
-    setIsDropdownOpen(!isDropdownOpen);
-  };
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -28,95 +24,138 @@ export default function Navbar() {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
 
+  useEffect(() => {
+    setIsDropdownOpen(false); 
+  }, [location]);
+
+  const toggleDropdown = () => {
+    if (!isDropdownOpen && profilePicRef.current) {
+      const rect = profilePicRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + window.scrollY + 10,
+        left: rect.left + window.scrollX - 150,
+      });
+    }
+    setIsDropdownOpen(!isDropdownOpen);
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await fetch(`${import.meta.env.VITE_REACT_APP_API_URL}/api/auth/signout`);
+      dispatch(signOut());
+      navigate('/');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <nav className="bg-white border-gray-200">
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <a
-          href="/home"
-          className="flex items-center space-x-3 rtl:space-x-reverse"
-        >
-          <strong className="bg-gray-500 text-white rounded-full border-4 border-gray-600 flex items-center justify-center w-12 h-12 text-xl font-bold">
+      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-3">
+        <Link to="/" className="flex items-center space-x-3 rtl:space-x-reverse">
+          <strong className="bg-gray-500 text-white rounded-full border-4 border-gray-600 flex items-center justify-center w-8 h-8 text-xl font-bold">
             B
           </strong>
           <span className="self-center text-2xl font-semibold whitespace-nowrap text-black">
             Blog
           </span>
-        </a>
+        </Link>
 
         <div className="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-          <button
-            type="button"
-            className="flex text-sm bg-gray-800 rounded-full md:me-0 focus:ring-4 focus:ring-gray-300"
-            aria-expanded={isDropdownOpen}
-            onClick={toggleDropdown}
-            ref={profilePicRef}
-          >
-            <span className="sr-only">Open user menu</span>
-            <img
-              className="w-8 h-8 rounded-full"
-              src="https://flowbite.com/docs/images/people/profile-picture-3.jpg"
-              alt="user photo"
-            />
-          </button>
-          {/* Dropdown menu */}
-          {isDropdownOpen && (
-            <div
-              className="z-50 absolute w-48 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow-lg"
-              style={{
-                top: `${dropdownPosition.top}px`,
-                left: `${dropdownPosition.left}px`,
-              }}
-              ref={dropdownRef}
-            >
-              <div className="px-4 py-3">
-                <span className="block text-sm font-semibold text-gray-900">
-                  Bonnie Green
-                </span>
-                <span className="block text-sm text-gray-500 truncate">
-                  name@flowbite.com
-                </span>
-              </div>
-              <ul className="py-2">
-                <li>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Dashboard
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Settings
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Earnings
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  >
-                    Sign out
-                  </a>
-                </li>
-              </ul>
-            </div>
+          {currentUser ? (
+            <>
+              <span>{currentUser.username}</span>
+              <button
+                type="button"
+                className="flex text-sm bg-gray-800 rounded-full md:me-0 focus:ring-4 focus:ring-gray-300"
+                aria-expanded={isDropdownOpen}
+                onClick={toggleDropdown}
+                ref={profilePicRef}
+              >
+                <span className="sr-only">Open user menu</span>
+                {currentUser ? (
+                  <img
+                    className="w-8 h-8 rounded-full"
+                    src={currentUser.profile_picture}
+                    alt={currentUser.username}
+                  />
+                ) : (
+                  <span>Loading</span>
+                )}
+              </button>
+              {isDropdownOpen && (
+                <div
+                  className="z-50 absolute w-48 text-base list-none bg-white divide-y divide-gray-100 rounded-lg shadow-lg"
+                  style={{
+                    top: `${dropdownPosition.top}px`,
+                    left: `${dropdownPosition.left}px`,
+                  }}
+                  ref={dropdownRef}
+                >
+                  <div className="px-4 py-3">
+                    <span className="block text-sm font-semibold text-gray-900">
+                      {currentUser.username}
+                    </span>
+                    <span className="block text-sm text-gray-500 truncate">
+                      {currentUser.email}
+                    </span>
+                  </div>
+                  <ul className="py-2">
+                    <li>
+                      <Link
+                        to="/profile"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Profile
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/settings"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Settings
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/earnings"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        Earnings
+                      </Link>
+                    </li>
+                    <li>
+                      <button
+                        onClick={handleSignOut}
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
+                      >
+                        Sign out
+                      </button>
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <button>
+                <Link to='/signin'>
+                  <span className="text-gray-600 text-sm font-bold">Sign In</span>
+                </Link>
+              </button>
+              <button>
+                <Link to='/signup'>
+                  <span className="text-gray-600 text-sm font-bold">Sign Up</span>
+                </Link>
+              </button>
+            </>
           )}
           <button
             data-collapse-toggle="navbar-user"
@@ -149,45 +188,37 @@ export default function Navbar() {
         >
           <ul className="flex flex-col font-medium p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 md:bg-white">
             <li>
-              <a
-                href="#"
+              <Link
+                to="/"
                 className="block py-2 px-3 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0"
                 aria-current="page"
               >
                 Home
-              </a>
+              </Link>
             </li>
             <li>
-              <a
-                href="#"
-                className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0"
+              <Link
+                to="/profile"
+                className="block py-2 px-3 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0"
               >
-                About
-              </a>
+                Profile
+              </Link>
             </li>
             <li>
-              <a
-                href="#"
-                className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0"
+              <Link
+                to="/settings"
+                className="block py-2 px-3 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0"
               >
-                Services
-              </a>
+                Settings
+              </Link>
             </li>
             <li>
-              <a
-                href="#"
-                className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0"
+              <Link
+                to="/earnings"
+                className="block py-2 px-3 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0"
               >
-                Pricing
-              </a>
-            </li>
-            <li>
-              <a
-                href="#"
-                className="block py-2 px-3 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0"
-              >
-                Contact
-              </a>
+                Earnings
+              </Link>
             </li>
           </ul>
         </div>

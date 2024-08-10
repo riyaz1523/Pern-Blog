@@ -1,19 +1,16 @@
 import pool from '../db/index.js';
 import { errorHandler } from '../utils/error.js';
 
-export const getComments = async (req, res, next) => {
-  try {
-    const result = await pool.query('SELECT * FROM comments');
-    res.status(200).json(result.rows);
-  } catch (error) {
-    next(error);
-  }
-};
 
 export const getCommentById = async (req, res, next) => {
   const { id } = req.params;
   try {
-    const result = await pool.query('SELECT * FROM comments WHERE id = $1', [id]);
+    const result = await pool.query(`
+      SELECT comments.*, users.profile_picture, users.name
+      FROM comments
+      JOIN users ON comments.author_id = users.id
+      WHERE comments.id = $1
+    `, [id]);
     if (result.rows.length === 0) {
       return next(errorHandler(404, 'Comment not found'));
     }
@@ -23,19 +20,41 @@ export const getCommentById = async (req, res, next) => {
   }
 };
 
-export const createComment = async (req, res, next) => {
-  const { story_id, content, author_id, like_count, star } = req.body;
+export const getComments = async (req, res, next) => {
   try {
-    const result = await pool.query(
-      `INSERT INTO comments (story_id, content, author_id, like_count, star)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [story_id, content, author_id, like_count, star]
-    );
-    res.status(201).json(result.rows[0]);
+    const result = await pool.query(`
+      SELECT comments.*, users.profile_picture, users.username
+      FROM comments
+      JOIN users ON comments.author_id = users.id
+    `);
+    res.status(200).json(result.rows);
   } catch (error) {
     next(error);
   }
 };
+
+
+export const createComment = async (req, res, next) => {
+  const { story_id, content, author_id } = req.body;
+  try {
+    const result = await pool.query(
+      `INSERT INTO comments (story_id, content, author_id)
+       VALUES ($1, $2, $3) RETURNING *`,
+      [story_id, content, author_id]
+    );
+    const newComment = result.rows[0];
+
+    // Fetch user details
+    const userResult = await pool.query('SELECT profile_picture, username FROM users WHERE id = $1', [author_id]);
+    newComment.author = userResult.rows[0];
+
+    res.status(201).json(newComment);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 
 export const updateComment = async (req, res, next) => {
   const { id } = req.params;
