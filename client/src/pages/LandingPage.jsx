@@ -26,7 +26,7 @@ const LandingPage = () => {
             Your ultimate destination for engaging and insightful content. Discover, read, and share the best blogs on the web.
           </motion.p>
           <motion.a 
-            href="/posts"
+            href="/BlogCard"
             className="bg-blue-500 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-600 transition-colors inline-flex items-center"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

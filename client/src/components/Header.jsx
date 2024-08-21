@@ -70,7 +70,7 @@ export default function Header() {
         <div className="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
           {currentUser ? (
             <>
-              <span>{currentUser.username}</span>
+              <span className='mr-6 block text-gray-700 rounded font-bold'>Hello {currentUser.username}</span>
               <button
                 type="button"
                 className="flex text-sm bg-gray-800 rounded-full md:me-0 focus:ring-4 focus:ring-gray-300"
@@ -116,22 +116,6 @@ export default function Header() {
                       </Link>
                     </li>
                     <li>
-                      <Link
-                        to="/settings"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Settings
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        to="/earnings"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      >
-                        Earnings
-                      </Link>
-                    </li>
-                    <li>
                       <button
                         onClick={handleSignOut}
                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
@@ -147,7 +131,7 @@ export default function Header() {
             <>
               <button>
                 <Link to='/signin'>
-                  <span className="text-gray-600 text-sm font-bold">Sign In</span>
+                  <span className="text-gray-600 text-sm font-bold mr-6">Sign In</span>
                 </Link>
               </button>
               <button>
@@ -201,25 +185,27 @@ export default function Header() {
                 to="/profile"
                 className="block py-2 px-3 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0"
               >
-                Profile
+                About
               </Link>
             </li>
             <li>
               <Link
-                to="/settings"
+                to="/"
                 className="block py-2 px-3 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0"
               >
-                Settings
+                All Posts
               </Link>
             </li>
-            <li>
+            {currentUser &&(
+              <li>
               <Link
-                to="/earnings"
+                to="/mypost"
                 className="block py-2 px-3 text-gray-700 rounded hover:bg-gray-100 md:hover:bg-transparent md:border-0 md:hover:text-blue-700 md:p-0"
               >
-                Earnings
+                My Posts
               </Link>
             </li>
+            )}
           </ul>
         </div>
       </div>

@@ -1,11 +1,30 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import RichTextEditor from '../components/RichTextEditor';
 
 const EditPost = () => {
-  const [title, setTitle] = useState('Boost your conversion rate');
-  const [content, setContent] = useState('Illo sint voluptas. Error voluptates culpa eligendi.');
-  const [image, setImage] = useState('https://flowbite.com/docs/images/blog/image-1.jpg');
+  const { id } = useParams();
+  const [title, setTitle] = useState('');
+  const [content, setContent] = useState('');
+  const [image, setImage] = useState('');
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    // Fetch the existing post data
+    const fetchPost = async () => {
+      try {
+        const response = await fetch(`http://localhost:3000/api/story/getStoryById/${id}`);
+        const data = await response.json();
+        setTitle(data.title);
+        setContent(data.description);
+        setImage(data.image);
+      } catch (error) {
+        console.error('Error fetching post:', error);
+      }
+    };
+
+    fetchPost();
+  }, [id]);
 
   const handleImageChange = (e) => {
     if (e.target.files[0]) {
@@ -13,9 +32,30 @@ const EditPost = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission logic here
+
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', content);
+    formData.append('image', fileInputRef.current.files[0]);
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/story/updateStory/${id}`, {
+        method: 'PUT',
+        credentials: 'include',
+        // headers: {
+        //   'Content-Type': 'application/json',
+        // },
+        body: formData,
+      });
+
+      if (response.ok) {
+        // Redirect or update UI after successful update
+      }
+    } catch (error) {
+      console.error('Error updating post:', error);
+    }
   };
 
   return (
@@ -54,7 +94,7 @@ const EditPost = () => {
 
         <div className="mb-6">
           <label htmlFor="content" className="block text-gray-700 text-sm font-semibold mb-2">Content</label>
-          <RichTextEditor />
+          <RichTextEditor value={content} onChange={setContent} />
         </div>
 
         <button

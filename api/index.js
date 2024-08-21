@@ -11,10 +11,11 @@ import likeRoutes from './routes/likeRoutes.js'
 
 const allowedOrigins = [
     'http://localhost:5173',
+    'https://pern-blog-app.vercel.app'
   ];
 
   app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: allowedOrigins,
     credentials: true, // Allow credentials (cookies) to be sent
     allowedHeaders: ['Content-Type', 'Authorization'],
   }));

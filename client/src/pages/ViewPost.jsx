@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
-import { FaHeart } from "react-icons/fa";
+import { Link, useParams } from "react-router-dom";
+import { FaHeart, FaEdit } from "react-icons/fa";
 import Loader from "../components/Loader";
 import { useSelector } from "react-redux";
 
@@ -146,6 +146,7 @@ const ViewPost = () => {
   if (loading) return <Loader />;
   if (error) return <div>Error: {error}</div>;
   if (!post) return <div>No post found</div>;
+  
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-gray-50">
@@ -184,6 +185,11 @@ const ViewPost = () => {
         <div>
           <span className="ml-3">{post.like_count || 0}</span>
         </div>
+        {post.user_id == currentUser.id ? (
+          <Link to={`/story/edit/${id}`} className="ml-3 cursor-pointer">
+            <FaEdit />
+          </Link>
+        ) : null}
       </div>
 
       {/* Post Content */}

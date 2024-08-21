@@ -1,7 +1,62 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 
+const UserPostsPage = () => {
+  const { currentUser } = useSelector((state) => state.user);
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const apiUrl = import.meta.env.VITE_REACT_APP_API_URL;
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}/api/story/myposts/${currentUser.id}`, {
+          params: { author_id: currentUser.id },
+        });
+        setPosts(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to fetch posts');
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, [currentUser.id, apiUrl]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>{error}</p>;
+
+  return (
+    <div className="bg-white py-4 sm:py-3">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <div className="mx-auto mt-6 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-12 border-t border-gray-200 pt-10 sm:mt-1 sm:pt-2 lg:mx-0 lg:max-w-none lg:grid-cols-3">
+          {posts.map((post) => (
+            <BlogCard key={post.id} post={post} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 function BlogCard({ post }) {
+  const { currentUser } = useSelector((state) => state.user);
+  const apiUrl = import.meta.env.VITE_REACT_APP_API_URL;
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`${apiUrl}/api/story/deleteStory/${id}`);
+      window.location.reload(); // Reload to reflect changes
+    } catch (error) {
+      console.error('Error deleting post:', error);
+    }
+  };
+
   if (!post) {
     return null; 
   }
@@ -68,6 +123,22 @@ function BlogCard({ post }) {
             <p className="text-gray-600">{like_count} Likes • {comment_count} Comments</p>
           </div>
         </div>
+        {currentUser.id === post.author_id && (
+          <div className="mt-4 flex justify-between">
+            <Link
+              to={`/edit-post/${id}`}
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300"
+            >
+              Edit
+            </Link>
+            <button
+              onClick={() => handleDelete(id)}
+              className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-red-700 rounded-lg hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300"
+            >
+              Delete
+            </button>
+          </div>
+        )}
         <Link
           to={`/story/${id}`}
           className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 mt-4"
@@ -94,4 +165,6 @@ function BlogCard({ post }) {
   );
 }
 
-export default BlogCard;
+export default UserPostsPage;
+
+

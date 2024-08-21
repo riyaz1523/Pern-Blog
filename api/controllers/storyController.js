@@ -47,6 +47,7 @@ export const getStoryById = async (req, res, next) => {
         stories.image,
         stories.created_at AS date,
         users.username AS author_name,
+        users.id AS user_id,
         users.profile_picture AS author_blogImg,
         users.email AS author_email,
         users.is_admin AS author_isAdmin,
@@ -150,3 +151,39 @@ export const deleteStory = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getCurrentUserStories = async (req, res, next) => {
+  try {
+    const { author_id } = req.params; // Extracting author_id from the URL parameters
+
+    const query = `
+      SELECT 
+        s.id,
+        s.title,
+        s.content,
+        s.image,
+        s.like_count,
+        s.read_time,
+        COALESCE(COUNT(DISTINCT sl.user_id), 0) AS like_count,
+        COALESCE(COUNT(DISTINCT c.id), 0) AS comment_count,
+        s.created_at,
+        s.updated_at,
+        u.username AS author_name,
+        u.profile_picture AS author_picture
+      FROM stories s
+      LEFT JOIN users u ON s.author_id = u.id
+      LEFT JOIN story_likes sl ON s.id = sl.story_id
+      LEFT JOIN comments c ON s.id = c.story_id
+      WHERE s.author_id = $1
+      GROUP BY s.id, u.username, u.profile_picture
+      ORDER BY s.created_at DESC;
+    `;
+
+    const result = await pool.query(query, [author_id]); // Passing author_id as a parameter to the query
+    res.status(200).json(result.rows);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
